@@ -67,4 +67,5 @@ void AppBase::Update(double _deltaTime)
 
 void AppBase::Draw()
 {
+
 }

@@ -1,7 +1,9 @@
+#include <windows.h>
+#include <windowsx.h>
 #include <iostream>
 #include <chrono>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <gl/wglext.h>
 #include "AppBase.h"
 //////////////////////////////////////////////////////////////////////////
 constexpr int WINDOW_WIDTH = 800;
@@ -9,54 +11,129 @@ constexpr int WINDOW_HEIGHT = 400;
 //////////////////////////////////////////////////////////////////////////
 AppBase* g_pApplication = nullptr;
 //////////////////////////////////////////////////////////////////////////
-void SetCursorPosCallback(GLFWwindow* window, double x, double y);
-void SetMouseButtonCallback(GLFWwindow* window, int button, int action, int modifiers);
-void SetScrollCallback(GLFWwindow* window, double x, double y);
-void SetFramebufferSizeCallback(GLFWwindow* window, int width, int height);
+LRESULT CALLBACK WndProc(HWND _hWnd, UINT _msg, WPARAM _wparam, LPARAM _lparam);
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
-	glfwInit();
-	glfwSetTime(0);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_SAMPLES, 0);
-	glfwWindowHint(GLFW_RED_BITS, 8);
-	glfwWindowHint(GLFW_GREEN_BITS, 8);
-	glfwWindowHint(GLFW_BLUE_BITS, 8);
-	glfwWindowHint(GLFW_ALPHA_BITS, 8);
-	glfwWindowHint(GLFW_STENCIL_BITS, 8);
-	glfwWindowHint(GLFW_DEPTH_BITS, 24);
-	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+	HINSTANCE hInstance;
+	HWND hwnd;
+	HDC hdc;
+	HGLRC hrc;
+	MSG msg;
+	TCHAR title[] = TEXT("Hello");
 
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Hello", nullptr, nullptr);
-	glfwMakeContextCurrent(window);
-	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	glfwSwapInterval(1);
+	// Create Window Config
+	hInstance = GetModuleHandle(nullptr);
+	WNDCLASSEX wcex;
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_OWNDC;
+	wcex.lpfnWndProc = &DefWindowProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = nullptr;
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground = 0;
+	wcex.lpszMenuName = nullptr;
+	wcex.lpszClassName = title;
+	wcex.hIconSm = nullptr;
+	wcex.lpfnWndProc = WndProc;
+	RegisterClassEx(&wcex);
 
-	glfwSetCursorPosCallback(window, SetCursorPosCallback);
-	glfwSetMouseButtonCallback(window, SetMouseButtonCallback);
-	glfwSetScrollCallback(window, SetScrollCallback);
-	glfwSetFramebufferSizeCallback(window, SetFramebufferSizeCallback);
+	// Calculate Window Size for Resolution 
+	RECT rect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+	int style = WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_BORDER |
+		WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
+	AdjustWindowRect(&rect, style, FALSE);
 
+	// Create Window
+	hwnd = CreateWindow(title, title, style, CW_USEDEFAULT, CW_USEDEFAULT,
+						rect.right - rect.left, rect.bottom - rect.top,
+						nullptr, nullptr, hInstance, nullptr);
+
+	// Get Window Context
+	hdc = GetDC(hwnd);
+	
+	// Create Old Version Pixel Format
+	PIXELFORMATDESCRIPTOR pfd;
+	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 32;
+	pfd.cDepthBits = 24;
+	pfd.cStencilBits = 8;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+	int suggestedPixelFormat = ChoosePixelFormat(hdc, &pfd);
+	SetPixelFormat(hdc, suggestedPixelFormat, &pfd);
+	hrc = wglCreateContext(hdc);
+	
+	// Active Context
+	wglMakeCurrent(hdc, hrc);
+
+	// Create Extended Version Pixel Format
+	auto wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+	if (wglChoosePixelFormatARB)
+	{
+		float fAttributes[] = { 0 };
+		
+		int iAttributes[] = {
+			WGL_DRAW_TO_WINDOW_ARB,		GL_TRUE,
+			WGL_SUPPORT_OPENGL_ARB,		GL_TRUE,
+			WGL_ACCELERATION_ARB,		WGL_FULL_ACCELERATION_ARB,
+			WGL_DOUBLE_BUFFER_ARB,		GL_TRUE,
+			WGL_COLOR_BITS_ARB,			pfd.cColorBits,
+			WGL_DEPTH_BITS_ARB,			pfd.cDepthBits,
+			WGL_STENCIL_BITS_ARB,		pfd.cStencilBits,
+			WGL_SAMPLE_BUFFERS_ARB,		GL_TRUE,
+			WGL_SAMPLES_ARB,			4,
+			0
+		};
+
+		UINT numFormats;
+		
+		BOOL valid = wglChoosePixelFormatARB(hdc, iAttributes, fAttributes, 1, &suggestedPixelFormat, &numFormats);
+		
+		if (valid != FALSE && numFormats != 0)
+		{
+			SetPixelFormat(hdc, suggestedPixelFormat, &pfd);
+		}
+	}
+
+	// Enable VSync
+	auto wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	if (wglSwapIntervalEXT)
+	{
+		wglSwapIntervalEXT(1);
+	}
+
+	// Enable GL functions
+	gladLoadGL();
+	
 	// TODO:
 	g_pApplication = new AppBase(WINDOW_WIDTH, WINDOW_HEIGHT);
-
 	auto lastTime = std::chrono::system_clock::now();
 
-	while (!glfwWindowShouldClose(window))
+	// Show Window
+	ShowWindow(hwnd, SW_NORMAL);
+
+	while (true)
 	{
 		auto currentTime = std::chrono::system_clock::now();
 		auto deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
-		g_pApplication->Update(deltaTime);
 		lastTime = currentTime;
+		//printf("%f\n", deltaTime);
 
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		g_pApplication->Update(deltaTime);
 		g_pApplication->Draw();
-		glfwSwapBuffers(window);
-		
-		glfwPollEvents();
+		SwapBuffers(hdc);
 	}
 
 	delete g_pApplication;
@@ -64,31 +141,65 @@ int main()
 	return 0;
 }
 
-void SetCursorPosCallback(GLFWwindow*, double _x, double _y)
+LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wparam, LPARAM _lparam)
 {
-	g_pApplication->OnCursorPosX(_x);
-	g_pApplication->OnCursorPosY(_y);
-}
-
-void SetMouseButtonCallback(GLFWwindow*, int _button, int _action, int)
-{
-	switch (_button)
+	switch (_msg)
 	{
-	case GLFW_MOUSE_BUTTON_LEFT:	g_pApplication->OnMouseLeftButton(_action == GLFW_PRESS);	break;
-	case GLFW_MOUSE_BUTTON_RIGHT:	g_pApplication->OnMouseRightButton(_action == GLFW_PRESS);	break;
-	case GLFW_MOUSE_BUTTON_MIDDLE:	g_pApplication->OnMouseMiddleButton(_action == GLFW_PRESS);	break;
-	default: break;
+	case WM_MOUSEMOVE:
+	{
+		double x = static_cast<double>(GET_X_LPARAM(_lparam));
+		double y = static_cast<double>(GET_Y_LPARAM(_lparam));
+		g_pApplication->OnCursorPosX(x);
+		g_pApplication->OnCursorPosX(y);
+		break;
 	}
+	case WM_LBUTTONDOWN:
+	{
+		g_pApplication->OnMouseLeftButton(true);
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		g_pApplication->OnMouseLeftButton(false);
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		g_pApplication->OnMouseRightButton(true);
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		g_pApplication->OnMouseRightButton(false);
+		break;
+	}
+	case WM_MBUTTONDOWN:
+	{
+		g_pApplication->OnMouseMiddleButton(true);
+		break;
+	}
+	case WM_MBUTTONUP:
+	{
+		g_pApplication->OnMouseMiddleButton(false);
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		double scroll = static_cast<double>(GET_WHEEL_DELTA_WPARAM(_wparam));
+		g_pApplication->OnMouseWheel(scroll);
+		break;
+	}
+	case WM_SIZE:
+	{
+		int width = static_cast<int>(LOWORD(_lparam));
+		int height = static_cast<int>(HIWORD(_lparam));
+		g_pApplication->OnFramebufferSize(width, height);
+		break;
+	}
+	default:
+		break;
+	}
+
+	return DefWindowProc(_hwnd, _msg, _wparam, _lparam);
 }
 
-void SetScrollCallback(GLFWwindow*, double, double _y)
-{
-
-	g_pApplication->OnMouseWheel(_y);
-}
-
-void SetFramebufferSizeCallback(GLFWwindow*, int _width, int _height)
-{
-	std::cout << "framebuffer size(" << _width << ", " << _height << ")" << std::endl;
-	g_pApplication->OnFramebufferSize(_width, _height);
-}
