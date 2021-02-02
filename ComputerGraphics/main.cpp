@@ -50,9 +50,9 @@ int main()
 	{
 		auto currentTime = std::chrono::system_clock::now();
 		auto deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
-		g_pApplication->Update(deltaTime);
 		lastTime = currentTime;
 
+		g_pApplication->Update(deltaTime);
 		g_pApplication->Draw();
 		glfwSwapBuffers(window);
 		
