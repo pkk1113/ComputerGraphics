@@ -61,6 +61,8 @@ int main()
 
 	delete g_pApplication;
 
+	glfwTerminate();
+
 	return 0;
 }
 
