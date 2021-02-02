@@ -15,22 +15,17 @@ LRESULT CALLBACK WndProc(HWND _hWnd, UINT _msg, WPARAM _wparam, LPARAM _lparam);
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
-	HINSTANCE hInstance;
-	HWND hwnd;
-	HDC hdc;
-	HGLRC hrc;
-	MSG msg;
 	TCHAR title[] = TEXT("Hello");
 
-	// Create Window Config
-	hInstance = GetModuleHandle(nullptr);
+	// Regist window class
+	auto hinstance = GetModuleHandle(nullptr);
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_OWNDC;
 	wcex.lpfnWndProc = &DefWindowProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
+	wcex.hInstance = hinstance;
 	wcex.hIcon = nullptr;
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = 0;
@@ -40,93 +35,104 @@ int main()
 	wcex.lpfnWndProc = WndProc;
 	RegisterClassEx(&wcex);
 
-	// Calculate Window Size for Resolution 
+	// Caculate window size for resolution.
 	RECT rect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
 	int style = WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_BORDER |
 		WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
 	AdjustWindowRect(&rect, style, FALSE);
 
-	// Create Window
-	hwnd = CreateWindow(title, title, style, CW_USEDEFAULT, CW_USEDEFAULT,
-						rect.right - rect.left, rect.bottom - rect.top,
-						nullptr, nullptr, hInstance, nullptr);
+	// Create window
+	auto hwnd = CreateWindow(title, title, style, CW_USEDEFAULT, CW_USEDEFAULT,
+		rect.right - rect.left, rect.bottom - rect.top,
+		nullptr, nullptr, hinstance, nullptr);
 
-	// Get Window Context
-	hdc = GetDC(hwnd);
-	
-	// Create Old Version Pixel Format
+	// Get device context
+	auto hdc = GetDC(hwnd);
+
+	// Create old version opengl context
 	PIXELFORMATDESCRIPTOR pfd;
 	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
 	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion = 1;
 	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 32;
-	pfd.cDepthBits = 24;
-	pfd.cStencilBits = 8;
-	pfd.iLayerType = PFD_MAIN_PLANE;
 	int suggestedPixelFormat = ChoosePixelFormat(hdc, &pfd);
 	SetPixelFormat(hdc, suggestedPixelFormat, &pfd);
-	hrc = wglCreateContext(hdc);
-	
-	// Active Context
+	auto hrc = wglCreateContext(hdc);
 	wglMakeCurrent(hdc, hrc);
 
-	// Create Extended Version Pixel Format
+	// Create extended opengl context
 	auto wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
-	if (wglChoosePixelFormatARB)
+	auto wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+	if (wglChoosePixelFormatARB && wglCreateContextAttribsARB)
 	{
 		float fAttributes[] = { 0 };
-		
+
 		int iAttributes[] = {
 			WGL_DRAW_TO_WINDOW_ARB,		GL_TRUE,
 			WGL_SUPPORT_OPENGL_ARB,		GL_TRUE,
 			WGL_ACCELERATION_ARB,		WGL_FULL_ACCELERATION_ARB,
 			WGL_DOUBLE_BUFFER_ARB,		GL_TRUE,
-			WGL_COLOR_BITS_ARB,			pfd.cColorBits,
-			WGL_DEPTH_BITS_ARB,			pfd.cDepthBits,
-			WGL_STENCIL_BITS_ARB,		pfd.cStencilBits,
+			WGL_COLOR_BITS_ARB,			32,
+			WGL_DEPTH_BITS_ARB,			24,
+			WGL_STENCIL_BITS_ARB,		8,
 			WGL_SAMPLE_BUFFERS_ARB,		GL_TRUE,
 			WGL_SAMPLES_ARB,			4,
 			0
 		};
 
-		UINT numFormats;
-		
-		BOOL valid = wglChoosePixelFormatARB(hdc, iAttributes, fAttributes, 1, &suggestedPixelFormat, &numFormats);
-		
-		if (valid != FALSE && numFormats != 0)
+		int attribs[] = {
+			WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+			WGL_CONTEXT_MINOR_VERSION_ARB, 5,
+			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+			0
+		};
+
+		UINT numPFD;
+		BOOL valid = wglChoosePixelFormatARB(hdc, iAttributes, fAttributes, 1, &suggestedPixelFormat, &numPFD);
+
+		if (valid != 0 && numPFD != 0)
 		{
 			SetPixelFormat(hdc, suggestedPixelFormat, &pfd);
+			
+			auto hrc2 = wglCreateContextAttribsARB(hdc, nullptr, attribs);
+
+			if (hrc2)
+			{
+				wglMakeCurrent(/*hdc*/nullptr, /*hrc*/nullptr);
+				wglDeleteContext(hrc);
+				hrc = hrc2;
+				wglMakeCurrent(hdc, hrc);
+			}
 		}
 	}
 
 	// Enable VSync
 	auto wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-	if (wglSwapIntervalEXT)
-	{
-		wglSwapIntervalEXT(1);
-	}
-
-	// Enable GL functions
-	gladLoadGL();
+	if (wglSwapIntervalEXT) { wglSwapIntervalEXT(1); }
 	
+	// Enable extended GL functions
+	gladLoadGL();
+
 	// TODO:
 	g_pApplication = new AppBase(WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto lastTime = std::chrono::system_clock::now();
 
-	// Show Window
 	ShowWindow(hwnd, SW_NORMAL);
+
+	MSG msg;
+	auto lastTime = std::chrono::system_clock::now();
 
 	while (true)
 	{
 		auto currentTime = std::chrono::system_clock::now();
 		auto deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
 		lastTime = currentTime;
-		//printf("%f\n", deltaTime);
 
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
+			if (msg.message == WM_QUIT)
+			{
+				break;
+			}
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
@@ -138,6 +144,12 @@ int main()
 
 	delete g_pApplication;
 
+	// Destroy Windows
+	wglDeleteContext(hrc);
+	ReleaseDC(hwnd, hdc);
+	DestroyWindow(hwnd);
+	UnregisterClass(title, hinstance);
+
 	return 0;
 }
 
@@ -145,6 +157,11 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wparam, LPARAM _lparam)
 {
 	switch (_msg)
 	{
+	case WM_CLOSE:
+	{
+		PostQuitMessage(0);
+		break;
+	}
 	case WM_MOUSEMOVE:
 	{
 		double x = static_cast<double>(GET_X_LPARAM(_lparam));
