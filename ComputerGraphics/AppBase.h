@@ -24,10 +24,10 @@ public:
 	void OnCursorPosX(double _x);
 	void OnCursorPosY(double _y);
 	void OnMouseWheel(double _scroll);
-	void OnMouseLeftButton(bool pressed);
-	void OnMouseRightButton(bool pressed);
-	void OnMouseMiddleButton(bool pressed);
-	void OnFramebufferSize(int width, int height);
+	void OnMouseLeftButton(bool _pressed);
+	void OnMouseRightButton(bool _pressed);
+	void OnMouseMiddleButton(bool _pressed);
+	void OnFramebufferSize(int _width, int _height);
 public:
 	virtual void Update(double _deltaTime);
 	virtual void Draw();
