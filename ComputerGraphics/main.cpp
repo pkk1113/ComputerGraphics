@@ -89,6 +89,5 @@ void SetScrollCallback(GLFWwindow*, double, double _y)
 
 void SetFramebufferSizeCallback(GLFWwindow*, int _width, int _height)
 {
-	std::cout << "framebuffer size(" << _width << ", " << _height << ")" << std::endl;
 	g_pApplication->OnFramebufferSize(_width, _height);
 }
