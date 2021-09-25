@@ -61,6 +61,10 @@ void AppBase::OnFramebufferSize(int _width, int _height)
 	m_height = _height;
 }
 
+void AppBase::Init()
+{
+}
+
 void AppBase::Update(double _deltaTime)
 {
 }                                        
