@@ -29,6 +29,7 @@ public:
 	void OnMouseMiddleButton(bool pressed);
 	void OnFramebufferSize(int width, int height);
 public:
+	virtual void Init();
 	virtual void Update(double _deltaTime);
 	virtual void Draw();
 };
