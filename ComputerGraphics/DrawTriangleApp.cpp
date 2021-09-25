@@ -108,7 +108,7 @@ void main()
 	// Once_program
 	glUseProgram(_program);
 	auto aspect = (float)m_width / (float)m_height;
-	auto vmat = glm::lookAt(glm::vec3(0, 0, -2.f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	auto vmat = glm::lookAt(glm::vec3(0, 0, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	auto pmat = glm::perspective(45.f, aspect, 0.01f, 20.f);
 	auto vpmat = pmat * vmat;
 	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(vpmat));

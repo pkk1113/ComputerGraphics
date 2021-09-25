@@ -120,6 +120,9 @@ bool windows_base::InitPlatformSettings(const char* title, int width, int height
 	// Enable extended GL functions
 	gladLoadGL();
 
+	// Show Window
+	ShowWindow(g_hwnd, SW_NORMAL);
+
 	return true;
 }
 
@@ -142,10 +145,6 @@ bool windows_base::RunApp(AppBase* app)
 {
 	// 앱 초기화
 	g_pApplication = app;
-	app->Init();
-
-	// 화면 나오도록
-	ShowWindow(g_hwnd, SW_NORMAL);
 
 	MSG msg;
 	auto lastTime = std::chrono::system_clock::now();
@@ -177,6 +176,11 @@ bool windows_base::RunApp(AppBase* app)
 //////////////////////////////////////////////////////////////////////////
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wparam, LPARAM _lparam)
 {
+	if (g_pApplication == nullptr)
+	{
+		return DefWindowProc(_hwnd, _msg, _wparam, _lparam);
+	}
+
 	switch (_msg)
 	{
 	case WM_CLOSE:

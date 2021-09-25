@@ -1,7 +1,7 @@
 //> 플랫폼 결정(하나만 활성화)
 //---------------------------
-//#define USE_WINDOWS_BASE 1
-#define USE_GLFW_BASE 1
+#define USE_WINDOWS_BASE 1
+//#define USE_GLFW_BASE 1
 //---------------------------
 #ifdef USE_WINDOWS_BASE
 #include "windows_base.h"
@@ -25,6 +25,7 @@ int main()
 
 	// TODO:
 	auto app = new DrawTriangleApp(WINDOW_WIDTH, WINDOW_HEIGHT);
+	app->Init();
 
 	RunApp(app);
 	ReleasePlatformSettings();

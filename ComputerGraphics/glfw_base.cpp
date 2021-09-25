@@ -58,8 +58,6 @@ bool glfw_base::RunApp(AppBase* app)
 		return false;
 	}
 
-	app->Init();
-
 	g_pApplication = app;
 
 	auto lastTime = std::chrono::system_clock::now();
