@@ -20,9 +20,9 @@ void DrawTriangleApp::Init()
 
 	// VBO_Position
 	GLfloat vertexPositionData[] = {
-		-0.5f, -0.5f, 0.f,
-		0.5f, -0.5f, 0.f,
-		0.f, 0.45f, 0.f,
+		-0.5f, -0.433f, 0.f,
+		0.5f, -0.433f, 0.f,
+		0.f, 0.433f, 0.f,
 	};
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositionData), vertexPositionData, GL_STATIC_DRAW);
