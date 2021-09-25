@@ -18,12 +18,12 @@ HINSTANCE g_hinstance;
 HWND g_hwnd = NULL;
 HDC g_hdc = NULL;
 HGLRC g_hrc = NULL;
-TCHAR* g_title = NULL;
+char* g_title = NULL;
 LRESULT CALLBACK WndProc(HWND _hWnd, UINT _msg, WPARAM _wparam, LPARAM _lparam);
 
 // header에서 성언한 함수의 구현
 //////////////////////////////////////////////////////////////////////////
-bool InitPlatformSettings(const TCHAR* title, int width, int height)
+bool InitPlatformSettings(const char* title, int width, int height)
 {
 	// Regist window class
 	g_hinstance = GetModuleHandle(nullptr);
@@ -134,7 +134,7 @@ bool ReleasePlatformSettings()
 	wglDeleteContext(g_hrc);
 	ReleaseDC(g_hwnd, g_hdc);
 	DestroyWindow(g_hwnd);
-	UnregisterClass(g_title, g_hinstance);
+	UnregisterClassA(g_title, g_hinstance);
 
 	return true;
 }
