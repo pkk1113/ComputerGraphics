@@ -12,11 +12,11 @@ DrawTriangleApp::DrawTriangleApp(int width, int height)
 void DrawTriangleApp::Init()
 {
 	// VAO
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
+	glGenVertexArrays(1, &m_vao);
+	glBindVertexArray(m_vao);
 
 	// VBO
-	glGenBuffers(2, _vbo);
+	glGenBuffers(2, m_vbo);
 
 	// VBO_Position
 	GLfloat vertexPositionData[] = {
@@ -24,7 +24,7 @@ void DrawTriangleApp::Init()
 		0.5f, -0.433f, 0.f,
 		0.f, 0.433f, 0.f,
 	};
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositionData), vertexPositionData, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -35,12 +35,12 @@ void DrawTriangleApp::Init()
 		0.f, 1.f, 0.f,
 		0.f, 0.f, 1.f,
 	};
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColorData), vertexColorData, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 	// Shader_vertex
 	const GLchar* vertexShaderData = R"(
 #version 450 core 
@@ -94,19 +94,19 @@ void main()
 	}
 
 	// Program
-	_program = glCreateProgram();
-	glAttachShader(_program, vertexShader);
-	glAttachShader(_program, fragmentShader);
-	glLinkProgram(_program);
+	m_program = glCreateProgram();
+	glAttachShader(m_program, vertexShader);
+	glAttachShader(m_program, fragmentShader);
+	glLinkProgram(m_program);
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
 	// Once
 	glViewport(0, 0, m_width, m_height);
 	glClearColor(0.7f, 0.8f, 0.9f, 1.f);
-	
+
 	// Once_program
-	glUseProgram(_program);
+	glUseProgram(m_program);
 	auto aspect = (float)m_width / (float)m_height;
 	auto vmat = glm::lookAt(glm::vec3(0, 0, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	auto pmat = glm::perspective(45.f, aspect, 0.01f, 20.f);
@@ -114,7 +114,20 @@ void main()
 	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(vpmat));
 }
 
-void DrawTriangleApp::Update(double _deltaTime)
+void DrawTriangleApp::Release()
+{
+	// 사용해제를 안 해도 지울 수 있지만
+	// 습관적으로 하면 좋을 듯?
+	//[선택] glBindVertexArray(0);
+	glDeleteVertexArrays(1, &m_vao);
+	glDeleteBuffers(2, m_vbo);
+
+	// 사용 해제를 하고 지워야 합니다.
+	glUseProgram(0);
+	glDeleteProgram(m_program);
+}
+
+void DrawTriangleApp::Update(double deltaTime)
 {
 }
 

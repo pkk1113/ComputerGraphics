@@ -1,15 +1,10 @@
-/// header
 #include "windows_base.h"
-/// std
 #include <iostream>
 #include <chrono>
-/// platform
 #include <Windows.h>
 #include <windowsx.h>
-/// third_party
 #include <glad/glad.h>
 #include <gl/wglext.h>
-/// project
 #include "AppBase.h"
 
 //////////////////////////////////////////////////////////////////////////

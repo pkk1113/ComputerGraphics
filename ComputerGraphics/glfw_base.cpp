@@ -53,11 +53,6 @@ bool glfw_base::ReleasePlatformSettings()
 
 bool glfw_base::RunApp(AppBase* app)
 {
-	if (g_window == nullptr)
-	{
-		return false;
-	}
-
 	g_pApplication = app;
 
 	auto lastTime = std::chrono::system_clock::now();

@@ -65,6 +65,10 @@ void AppBase::Init()
 {
 }
 
+void AppBase::Release()
+{
+}
+
 void AppBase::Update(double _deltaTime)
 {
 }                                        
