@@ -17,6 +17,7 @@ using namespace glfw_base;
 #define WINDOW_HEIGHT 800
 
 //> æ€ ∞·¡§
+#include "DrawTriangleApp.h"
 #include "DrawCubeApp.h"
 
 int main()
