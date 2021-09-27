@@ -12,7 +12,7 @@ using namespace glfw_base;
 #endif
 
 //> 창 설정 결정
-#define WINDOW_TITLE "Draw Triagnle"
+#define WINDOW_TITLE "Draw Cube"
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 800
 
