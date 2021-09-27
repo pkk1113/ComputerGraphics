@@ -36,12 +36,11 @@ void DrawCubeApp::Init()
 #version 450 core 
 layout(location = 0) in vec3 i_pos;
 layout(location = 0) uniform mat4 u_vpmat;
-layout(location = 1) uniform mat4 u_mmat;
-layout(location = 2) uniform float u_gap;
+layout(location = 1) uniform mat4 u_mmat[6];
 out vec3 vs_color;
 void main()
 {
-	vec4 pos = u_mmat * vec4(i_pos.xy, i_pos.z + u_gap, 1.0);
+	vec4 pos = u_mmat[gl_InstanceID] * vec4(i_pos.xyz, 1.0);
 	gl_Position = u_vpmat * pos;
 	
 	vs_color = normalize(pos.xyz) * 0.5 + 0.5;
@@ -118,21 +117,21 @@ void DrawCubeApp::Release()
 
 void DrawCubeApp::Update(double deltaTime)
 {
-	// 1초에 0.1f
-	m_gab += deltaTime * m_gabDir * 5.f;
-	if (m_gab > 8.f || m_gab < 0.f)
-	{
-		m_gabDir *= -1.f;
-		printf("%f\n", m_gab);
-	}
+	deltaTime *= 0.1f;
 
-	// 1초에 한 바뀌
 	m_yaw += deltaTime * glm::two_pi<float>();
 	if (m_yaw > glm::two_pi<float>())
 	{
 		m_yaw = 0.f;
 	}
+
+	m_pitch += deltaTime * glm::two_pi<float>();
+	if (m_pitch > glm::two_pi<float>())
+	{
+		m_pitch = 0.f;
+	}
 }
+
 
 void DrawCubeApp::Draw()
 {
@@ -142,58 +141,27 @@ void DrawCubeApp::Draw()
 	auto aspect = (float)m_width / (float)m_height;
 	auto pmat = glm::perspective(45.f, aspect, 0.01f, 20.f);
 
-	const auto radius = 4.f;
-	auto x = radius * cos(m_yaw);
-	auto z = radius * sin(m_yaw);
-	auto y = 2.f;
+	const auto main_radius = 4.f;
+	const auto radius = main_radius * -cos(m_pitch);
+	const auto y = main_radius * sin(m_pitch);
+	const auto x = radius * cos(m_yaw); 
+	const auto z = radius * sin(m_yaw); 
 
+	// projection view matrix
 	auto vmat = glm::lookAt(glm::vec3(x, y, z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	auto vpmat = pmat * vmat;
 	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(vpmat));
 
-	// Model Matrix
-	// front
-	{
-		auto mmat = glm::rotate(0.f, glm::vec3(0, 1, 0));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(mmat));
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
+	// model matrix
+	glm::mat4 mmat[] = {
+		glm::rotate(0.f, glm::vec3(0, 1, 0)),
+		glm::rotate(glm::half_pi<float>(), glm::vec3(0, 1, 0)),
+		glm::rotate(glm::pi<float>(), glm::vec3(0, 1, 0)),
+		glm::rotate(-glm::half_pi<float>(), glm::vec3(0, 1, 0)),
+		glm::rotate(-glm::half_pi<float>(), glm::vec3(1, 0, 0)),
+		glm::rotate(glm::half_pi<float>(), glm::vec3(1, 0, 0)),
+	};
+	glUniformMatrix4fv(1, 6, GL_FALSE, glm::value_ptr(mmat[0]));
 
-	// right
-	{
-		auto mmat = glm::rotate(glm::half_pi<float>(), glm::vec3(0, 1, 0));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(mmat));
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
-
-	// back
-	{
-		auto mmat = glm::rotate(glm::pi<float>(), glm::vec3(0, 1, 0));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(mmat));
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
-
-	// left
-	{
-		auto mmat = glm::rotate(-glm::half_pi<float>(), glm::vec3(0, 1, 0));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(mmat));
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
-
-	// top
-	{
-		auto mmat = glm::rotate(-glm::half_pi<float>(), glm::vec3(1, 0, 0));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(mmat));
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
-
-	// bottom
-	{
-		auto mmat = glm::rotate(glm::half_pi<float>(), glm::vec3(1, 0, 0));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(mmat));
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
-
-	// Gap
-	glUniform1f(2, m_gab);
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 6);
 }
