@@ -168,6 +168,22 @@ bool windows_base::RunApp(AppBase* app)
 	return true;
 }
 
+bool windows_base::GetKeyState(Key key)
+{
+	// 현재 상태만 확인한다.
+	return(0x8001 & GetAsyncKeyState(key));
+}
+
+bool windows_base::GetKeyDown(Key key)
+{
+	return(0x8000 & GetAsyncKeyState(key));
+}
+
+bool windows_base::GetKeyUp(Key key)
+{
+	return(0x0001 & GetAsyncKeyState(key));
+}
+
 //////////////////////////////////////////////////////////////////////////
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wparam, LPARAM _lparam)
 {
