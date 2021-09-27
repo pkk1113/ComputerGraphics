@@ -21,9 +21,9 @@ protected:
 public:
 	AppBase(int _width, int _height);
 	virtual ~AppBase();
-	void OnCursorPosX(double _x);
-	void OnCursorPosY(double _y);
-	void OnMouseWheel(double _scroll);
+	void OnCursorPosX(double x);
+	void OnCursorPosY(double y);
+	void OnMouseWheel(double scroll);
 	void OnMouseLeftButton(bool pressed);
 	void OnMouseRightButton(bool pressed);
 	void OnMouseMiddleButton(bool pressed);
@@ -31,7 +31,7 @@ public:
 public:
 	virtual void Init();
 	virtual void Release();
-	virtual void Update(double _deltaTime);
+	virtual void Update(double deltaTime);
 	virtual void Draw();
 };
 
