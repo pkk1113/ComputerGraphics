@@ -148,17 +148,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AppBase.cpp" />
+    <ClCompile Include="DecalApp.cpp" />
     <ClCompile Include="DrawCubeApp.cpp" />
     <ClCompile Include="DrawTriangleApp.cpp" />
     <ClCompile Include="glfw_base.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="windows_base.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppBase.h" />
+    <ClInclude Include="BoxModel.h" />
+    <ClInclude Include="DecalApp.h" />
     <ClInclude Include="DrawCubeApp.h" />
     <ClInclude Include="DrawTriangleApp.h" />
     <ClInclude Include="glfw_base.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="PlaneModel.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="windows_base.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

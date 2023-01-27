@@ -19,13 +19,14 @@ using namespace glfw_base;
 //> ¾Û °áÁ¤
 #include "DrawTriangleApp.h"
 #include "DrawCubeApp.h"
+#include "DecalApp.h"
 
 int main()
 {
 	InitPlatformSettings(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// TODO:
-	auto app = new DrawCubeApp(WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto app = new DecalApp(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	app->Init();
 	RunApp(app);

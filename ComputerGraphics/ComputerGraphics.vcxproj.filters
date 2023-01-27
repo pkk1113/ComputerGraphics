@@ -13,15 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="App">
-      <UniqueIdentifier>{21891507-884a-4de9-a3f4-396b04728281}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="App\01_DrawTriangleApp">
-      <UniqueIdentifier>{e029bad3-f812-4cda-bf42-164679ff3066}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="App\02_DrawCubeApp">
-      <UniqueIdentifier>{a352ef6c-0971-48bc-b8c9-14796884fcb5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppBase.cpp">
@@ -36,11 +27,20 @@
     <ClCompile Include="windows_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DecalApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="DrawTriangleApp.cpp">
-      <Filter>App\01_DrawTriangleApp</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DrawCubeApp.cpp">
-      <Filter>App\02_DrawCubeApp</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -53,11 +53,26 @@
     <ClInclude Include="windows_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DecalApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="DrawTriangleApp.h">
-      <Filter>App\01_DrawTriangleApp</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DrawCubeApp.h">
-      <Filter>App\02_DrawCubeApp</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlaneModel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
