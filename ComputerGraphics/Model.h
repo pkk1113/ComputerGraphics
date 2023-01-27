@@ -23,7 +23,7 @@ public:
 		std::vector<float> vertex,
 		std::vector<float> normal,
 		std::vector<float> uv);
-	~Model();
+	virtual ~Model();
 
 	void Render();
 };
